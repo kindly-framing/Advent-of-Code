@@ -1,7 +1,3 @@
-// read all of the binary numbers in the input
-// for each binary number, check the common/least bit for each index
-// this will give two numbers, gamma and epsilon, which you have to convert to
-// decimal and multiply
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -27,12 +23,15 @@ gamma_epsilon(const std::vector<std::string> &binaries)
     std::string epsilon;
     for (int i = 0; i < binaries[i].size(); i++)
     {
+        // count with bit is the most common
         int count{};
         for (std::string binary : binaries)
         {
             count += (binary[i] ^ '0') ? 1 : -1;
         }
 
+        // for the current bit index, place most common in gamma, and least
+        // common in epsilon
         char most_common = (count < 0) ? '0' : '1';
         gamma += most_common;
         epsilon += most_common ^ 1;
