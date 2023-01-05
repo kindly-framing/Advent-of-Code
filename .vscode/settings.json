@@ -47,7 +47,9 @@
     "stdexcept": "cpp",
     "streambuf": "cpp",
     "typeinfo": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "map": "cpp",
+    "sstream": "cpp"
   },
   "code-runner.executorMap": {
     "cpp": "cd $dir && g++ -o $fileNameWithoutExt -I \"C:\\Users\\steve\\Desktop\\Advent of Code\\includes\" $fileName && $dir$fileNameWithoutExt"
