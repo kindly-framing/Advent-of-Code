@@ -1,11 +1,13 @@
 #include "helpers.h"
 #include <queue>
 #include <sstream>
+#include <utility>
 
 struct Board
 {
     std::vector<std::vector<int>> grid;
     std::vector<std::vector<bool>> marked;
+    std::pair<int, int> last_marked;
 
     Board() {}
 
@@ -45,12 +47,36 @@ struct Board
                 if (grid[i][j] == number)
                 {
                     marked[i][j] = true;
+                    last_marked = std::make_pair(i, j);
                 }
             }
         }
     }
 
-    bool won() {}
+    bool won()
+    {
+        bool vertical_win = true;
+        // checking vertically for win from last marked position
+        for (size_t i = 0; i < grid.size(); i++)
+        {
+            if (!marked[i][last_marked.second])
+            {
+                vertical_win = false;
+            }
+        }
+
+        // checking horizontally for win from last marked position
+        bool horizontal_win = true;
+        for (size_t i = 0; i < grid[last_marked.first].size(); i++)
+        {
+            if (!marked[last_marked.first][i])
+            {
+                horizontal_win = false;
+            }
+        }
+
+        return vertical_win || horizontal_win;
+    }
 };
 
 struct Bingo_Subsystem
@@ -84,7 +110,7 @@ struct Bingo_Subsystem
 
     bool won()
     {
-        for (Board b : boards)
+        for (Board &b : boards)
         {
             if (b.won())
             {
@@ -104,7 +130,7 @@ struct Bingo_Subsystem
 
         last_called = draw.front();
         draw.pop();
-        for (Board b : boards)
+        for (Board &b : boards)
         {
             b.mark(last_called);
         }
@@ -131,12 +157,12 @@ int main()
 {
     std::vector<std::string> lines = get_lines("sample.txt");
 
-    Bingo_Subsystem board(lines);
-    while (!board.won())
+    Bingo_Subsystem boards(lines);
+    while (!boards.won())
     {
-        board.draw_number();
+        boards.draw_number();
     }
-    std::cout << board.score() << '\n';
+    std::cout << boards.score() << '\n';
 
     return 0;
 }
