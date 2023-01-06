@@ -1,64 +1,78 @@
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
+#include "helpers.h"
+#include <algorithm>
+#include <numeric>
 
-int part1(const std::vector<std::string> &input)
+/**
+ * @brief Counts the number of times an integer is greater than the previous
+ * integer in a list.
+ *
+ * @param report A list of integers.
+ * @return Total count of increases from previous integer.
+ */
+int count_increases(const std::vector<int> &report)
 {
     int count{};
-    int prev = std::stoi(input[0]);
-    for (int i = 1; i < input.size(); i++)
+    for (int i = 1; i < report.size(); i++)
     {
-        int next = std::stoi(input[i]);
-        if (next - prev > 0)
+        if (report[i] > report[i - 1])
         {
             count++;
         }
-        prev = next;
     }
     return count;
 }
 
-int part2(const std::vector<std::string> &input)
+/**
+ * @brief Converts a list of string representations of numbers to a list of
+ * integers, using stoi().
+ *
+ * @param nums List of string representations of integers.
+ * @return Converted list to integers.
+ */
+std::vector<int> convert_to_numbers(const std::vector<std::string> &nums)
 {
-    using std::stoi;
-    std::vector<int> windows;
-    for (size_t i = 0; i + 2 < input.size(); i++)
-    {
-        int w = stoi(input[i]) + stoi(input[i + 1]) + stoi(input[i + 2]);
-        windows.push_back(w);
-    }
-
-    int count{};
-    int prev = windows[0];
-    for (int i = 1; i < windows.size(); i++)
-    {
-        int next = windows[i];
-        if (next - prev > 0)
-        {
-            count++;
-        }
-        prev = next;
-    }
-    return count;
+    std::vector<int> numbers;
+    std::transform(nums.begin(), nums.end(), std::back_inserter(numbers),
+                   [&](std::string s) { return std::stoi(s); });
+    return numbers;
 }
 
-std::vector<std::string> read_lines(const char *file)
+/**
+ * @brief Converts a list of integers to a list of sliding window sums of given
+ * size.
+ *
+ * @throw std::logic_error Window size cannot be greater than report size.
+ * @param report A list of integers.
+ * @param size The window size for sum.
+ * @return A list of the window sums of given size of the list of integers.
+ */
+std::vector<int> convert_to_window_sum(const std::vector<int> &report,
+                                       const int &size)
 {
-    std::ifstream in(file);
-    std::vector<std::string> lines;
-    std::string token;
-    while (std::getline(in, token))
+    if (size > report.size() || size <= 0)
     {
-        lines.push_back(token);
+        throw std::logic_error("Invalid window size: " + std::to_string(size));
     }
-    return lines;
+
+    std::vector<int> window_sums;
+    for (auto it = report.begin(); it + size - 1 != report.end(); it++)
+    {
+        window_sums.push_back(std::accumulate(it, it + size, 0));
+    }
+    return window_sums;
 }
 
 int main()
 {
-    std::vector<std::string> input = read_lines("sample.txt");
-    std::cout << part1(input) << std::endl;
-    std::cout << part2(input) << std::endl;
+    std::vector<std::string> input = get_lines("sample.txt");
+
+    // part 1 - only the depth measurements
+    std::vector<int> report = convert_to_numbers(input);
+    std::cout << count_increases(report) << std::endl;
+
+    // part 2 - three-measurement sliding window
+    std::vector<int> windows = convert_to_window_sum(report, 3);
+    std::cout << count_increases(windows) << std::endl;
+
     return 0;
 }
