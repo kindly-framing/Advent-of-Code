@@ -53,7 +53,7 @@ int main()
 {
     std::vector<std::string> binaries = get_lines("sample.txt");
 
-    std::pair<std::string, std::string> rates = gamma_epsilon(binaries);
+    std::pair<Binary, Binary> rates = gamma_epsilon(binaries);
     int gamma = std::stoi(rates.first, 0, 2);
     int epsilon = std::stoi(rates.second, 0, 2);
     std::cout << gamma * epsilon << '\n';
