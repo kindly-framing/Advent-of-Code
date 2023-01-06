@@ -1,49 +1,62 @@
-#include <fstream>
-#include <iostream>
-#include <string>
+#include "helpers.h"
+#include <numeric>
 #include <utility>
-#include <vector>
 
-std::vector<std::string> input(const char *file)
+// in the context for this problem, a binary is represented by a string
+using Binary = std::string;
+
+/**
+ * @brief Finds the most common bit in the corresponding position for all binary
+ * numbers in the list.
+ *
+ * @throw std::logic_error This function does not take into account no common
+ * bit.
+ * @param pos Position to check in binaries.
+ * @param binaries A list of binary numbers of the same length.
+ * @return char 0 or 1.
+ */
+char most_common_bit(const int &pos, const std::vector<Binary> &binaries)
 {
-    std::ifstream in(file);
-    std::vector<std::string> lines;
-    std::string l;
-    while (std::getline(in, l))
+    // by taking the sum of all bits, treating 0s as -1 and 1s as itself, the
+    // most common bit would be if the sum is negative(0) or positve(1).
+    int sum = std::accumulate(binaries.begin(), binaries.end(), 0,
+                              [&](int sum, Binary b)
+                              { return sum + ((b[pos] - '0') ? 1 : -1); });
+    if (sum == 0)
     {
-        lines.push_back(l);
+        throw std::logic_error("There is no fallback for no common bit.\n");
     }
-    return lines;
+    return (sum < 0) ? '0' : '1';
 }
 
-std::pair<std::string, std::string>
-gamma_epsilon(const std::vector<std::string> &binaries)
+/**
+ * @brief Calculates the gamma and epsilon of a list of binaries and returns
+ * them in binary format.
+ *
+ * @param binaries A list of binary numbers of the same length.
+ * @return std::pair<std::string, std::string>
+ */
+std::pair<Binary, Binary> gamma_epsilon(const std::vector<Binary> &binaries)
 {
-    std::string gamma;
-    std::string epsilon;
+    Binary gamma;
+    Binary epsilon;
     for (int i = 0; i < binaries[i].size(); i++)
     {
-        // count with bit is the most common
-        int count{};
-        for (std::string binary : binaries)
-        {
-            count += (binary[i] ^ '0') ? 1 : -1;
-        }
-
-        // for the current bit index, place most common in gamma, and least
-        // common in epsilon
-        char most_common = (count < 0) ? '0' : '1';
+        char most_common = most_common_bit(i, binaries);
         gamma += most_common;
-        epsilon += most_common ^ 1;
+        epsilon += most_common ^ 1; // swtiches '0'->'1' and '1'->'0'
     }
     return {gamma, epsilon};
 }
 
 int main()
 {
-    std::vector<std::string> binaries = input("sample.txt");
-    std::pair<std::string, std::string> rate = gamma_epsilon(binaries);
-    std::cout << std::stoi(rate.first, 0, 2) * std::stoi(rate.second, 0, 2)
-              << '\n';
+    std::vector<std::string> binaries = get_lines("sample.txt");
+
+    std::pair<std::string, std::string> rates = gamma_epsilon(binaries);
+    int gamma = std::stoi(rates.first, 0, 2);
+    int epsilon = std::stoi(rates.second, 0, 2);
+    std::cout << gamma * epsilon << '\n';
+
     return 0;
 }
