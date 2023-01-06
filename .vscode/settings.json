@@ -49,7 +49,10 @@
     "typeinfo": "cpp",
     "variant": "cpp",
     "map": "cpp",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "bitset": "cpp",
+    "ctime": "cpp",
+    "regex": "cpp"
   },
   "code-runner.executorMap": {
     "cpp": "cd $dir && g++ -o $fileNameWithoutExt -I \"C:\\Users\\steve\\Desktop\\Advent of Code\\includes\" $fileName && $dir$fileNameWithoutExt"
