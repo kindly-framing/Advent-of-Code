@@ -1,5 +1,4 @@
 #include "helpers.h"
-#include <cassert>
 #include <queue>
 #include <sstream>
 #include <utility>
