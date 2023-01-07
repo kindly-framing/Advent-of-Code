@@ -31,9 +31,21 @@ template <typename T> void display(const std::vector<T> &vec)
 {
     for (auto &&elem : vec)
     {
-        std::cout << elem << '\n';
+        std::cout << elem << ' ';
     }
     std::cout << '\n';
+}
+
+template <typename T> void display(const std::vector<std::vector<T>> &vec)
+{
+    for (auto &&row : vec)
+    {
+        for (auto &&elem : row)
+        {
+            std::cout << elem << ' ';
+        }
+        std::cout << '\n';
+    }
 }
 
 // Usuable simple hash for pairs.
