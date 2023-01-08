@@ -1,132 +1,90 @@
 #include "helpers.h"
-#include <algorithm>
-#include <cassert>
-#include <regex>
-#include <unordered_map>
-#include <utility>
+#include "vent.h"
 
-using Position = std::pair<int, int>;
-
-struct Line
+Vent::Line::Line(std::string str)
 {
-    Position m_start;
-    Position m_end;
-
-    // constructs a Line from a string formatted "x1,x2 -> y1,y2".
-    Line(std::string str)
-    {
-        m_start = {-1, -1};
-        m_end = {-1, -1};
-
-        std::string format = "%d,%d -> %d,%d";
-        std::sscanf(str.c_str(), format.c_str(), &m_start.first,
-                    &m_start.second, &m_end.first, &m_end.second);
-
-        if (m_start.first == -1 || m_start.second == -1 || m_end.first == -1 ||
-            m_end.second == -1)
-        {
-            throw std::invalid_argument("Can't construct from string: " + str);
-        }
-
-        // helps internally for getting a vector of positions from line
-        if (m_start > m_end)
-        {
-            std::swap(m_start, m_end);
-        }
+    if (!sscanf(str.c_str(), "%d,%d -> %d,%d", &start.first, &start.second,
+                &end.first, &end.second)) {
+        throw std::invalid_argument("Lines are not formatted correctly\n");
     }
-
-    std::vector<Position> convert_to_positions()
-    {
-        if (m_start.first != m_end.first && m_start.second != m_end.second)
-        {
-            return diagonal_to_positions();
-        }
-        if (m_start.first < m_end.first)
-        {
-            return horizontal_to_positions();
-        }
-        return vertical_to_positions();
+    if (start > end) {
+        std::swap(start, end);
     }
+}
 
-    std::vector<Position> horizontal_to_positions()
-    {
-        std::vector<Position> positions;
-        for (int i = m_start.first; i <= m_end.first; i++)
-        {
-            positions.push_back(Position(i, m_end.second));
-        }
-        return positions;
-    }
-
-    std::vector<Position> vertical_to_positions()
-    {
-        std::vector<Position> positions;
-        for (int i = m_start.second; i <= m_end.second; i++)
-        {
-            positions.push_back(Position(m_end.first, i));
-        }
-        return positions;
-    }
-
-    std::vector<Position> diagonal_to_positions()
-    {
-        std::vector<Position> positions;
-
-        int x_step = (m_end.first - m_start.first > 0) ? 1 : -1;
-        int y_step = (m_end.second - m_start.second > 0) ? 1 : -1;
-        Position p(m_start);
-        while (p <= m_end)
-        {
-            positions.push_back(p);
-            p.first += x_step;
-            p.second += y_step;
-        }
-
-        return positions;
-    }
-};
-
-struct Vent
+std::vector<Position> Vent::Line::convert_to_positions()
 {
-    std::unordered_map<Position, int, Pair_Hash> m_intersecting;
-
-    Vent(std::vector<std::string> data)
-    {
-        if (data.empty())
-        {
-            throw std::invalid_argument(
-                "There is no data to construct Vent!\n");
-        }
-
-        for (Position &p : extract_positions(data))
-        {
-            m_intersecting[p]++;
-        }
+    if (start.first != end.first && start.second != end.second) {
+        return diagonal_to_positions();
     }
-
-    std::vector<Position>
-    extract_positions(const std::vector<std::string> &data)
-    {
-        std::vector<Position> positions;
-        for (std::string str : data)
-        {
-            std::vector<Position> current = Line(str).convert_to_positions();
-            positions.insert(positions.end(), current.begin(), current.end());
-        }
-        return positions;
+    if (start.first != end.first) {
+        return horizontal_to_positions();
     }
+    return vertical_to_positions();
+}
 
-    int count(const int &n)
-    {
-        return std::count_if(m_intersecting.begin(), m_intersecting.end(),
-                             [&](auto elem) { return elem.second >= n; });
+std::vector<Position> Vent::Line::horizontal_to_positions()
+{
+    std::vector<Position> positions;
+    for (int i = start.first; i <= end.first; i++) {
+        positions.push_back(Position(i, end.second));
     }
-};
+    return positions;
+}
+
+std::vector<Position> Vent::Line::vertical_to_positions()
+{
+    std::vector<Position> positions;
+    for (int i = start.second; i <= end.second; i++) {
+        positions.push_back(Position(end.first, i));
+    }
+    return positions;
+}
+
+std::vector<Position> Vent::Line::diagonal_to_positions()
+{
+    std::vector<Position> positions;
+    int x_step = (end.first - start.first > 0) ? 1 : -1;
+    int y_step = (end.second - start.second > 0) ? 1 : -1;
+    Position p(start);
+    while (p <= end) {
+        positions.push_back(p);
+        p.first += x_step;
+        p.second += y_step;
+    }
+    return positions;
+}
+
+Vent::Vent(std::vector<std::string> data)
+{
+    for (auto &&position : extract_positions(data)) {
+        m_graph[position]++;
+    }
+    invariant();
+}
+
+std::vector<Position>
+Vent::extract_positions(const std::vector<std::string> &data)
+{
+    std::vector<Position> positions;
+    for (auto &&str : data) {
+        std::vector<Position> converted = Line(str).convert_to_positions();
+        positions.insert(positions.end(), converted.begin(), converted.end());
+    }
+    return positions;
+}
+
+int Vent::count_intersections(const int &n)
+{
+    invariant();
+    return std::count_if(m_graph.begin(), m_graph.end(),
+                         [&](auto elem) { return elem.second >= n; });
+}
 
 int main()
 {
-    std::vector<std::string> lines = get_lines("actual.txt");
+    std::vector<std::string> lines = get_lines("sample.txt");
     Vent vent(lines);
-    std::cout << std::boolalpha << (vent.count(2) == 18442) << '\n';
+    std::cout << vent.count_intersections(2) << '\n';
     return 0;
 }

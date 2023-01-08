@@ -1,103 +1,82 @@
 #include "helpers.h"
-#include <algorithm>
-#include <unordered_map>
-#include <utility>
+#include "vent.h"
 
-using Position = std::pair<int, int>;
-
-struct Line
+Vent::Line::Line(std::string str)
 {
-    Position m_start;
-    Position m_end;
-
-    Line(std::string str)
-    {
-        std::string format = "%d,%d -> %d,%d";
-        std::sscanf(str.c_str(), format.c_str(), &m_start.first,
-                    &m_start.second, &m_end.first, &m_end.second);
-
-        // helpful for converting to positions to have start < end
-        if (m_start > m_end)
-        {
-            std::swap(m_start, m_end);
-        }
+    if (!sscanf(str.c_str(), "%d,%d -> %d,%d", &start.first, &start.second,
+                &end.first, &end.second)) {
+        throw std::invalid_argument("Lines are not formatted correctly\n");
     }
-
-    std::vector<Position> convert_to_positions()
-    {
-        // only consider horizontal/vertical positions
-        if (m_start.first != m_end.first && m_start.second != m_end.second)
-        {
-            return {};
-        }
-
-        std::vector<Position> positions;
-
-        // increment x1 value to x2 value
-        for (int i = m_start.first; i < m_end.first; i++)
-        {
-            positions.push_back(Position(i, m_end.second));
-        }
-
-        // increment y1 value to y2 value
-        for (int i = m_start.second; i <= m_end.second; i++)
-        {
-            positions.push_back(Position(m_end.first, i));
-        }
-
-        return positions;
+    if (start > end) {
+        std::swap(start, end);
     }
-};
+}
 
-struct Vent
+std::vector<Position> Vent::Line::convert_to_positions()
 {
-    std::unordered_map<Position, int, Pair_Hash> m_intersecting;
+    if (start.first != end.first && start.second != end.second) {
+        throw std::logic_error("Diagonals are not considered for part 1!\n");
+    }
+    if (start.first != end.first) {
+        return horizontal_to_positions();
+    }
+    return vertical_to_positions();
+}
 
-    Vent(std::vector<std::string> data)
-    {
-        for (Position &p : extract_positions(data))
-        {
-            m_intersecting[p]++;
+std::vector<Position> Vent::Line::horizontal_to_positions()
+{
+    std::vector<Position> positions;
+    for (int i = start.first; i <= end.first; i++) {
+        positions.push_back(Position(i, end.second));
+    }
+    return positions;
+}
+
+std::vector<Position> Vent::Line::vertical_to_positions()
+{
+    std::vector<Position> positions;
+    for (int i = start.second; i <= end.second; i++) {
+        positions.push_back(Position(end.first, i));
+    }
+    return positions;
+}
+
+Vent::Vent(std::vector<std::string> data)
+{
+    for (auto &&position : extract_positions(data)) {
+        m_graph[position]++;
+    }
+    invariant();
+}
+
+std::vector<Position>
+Vent::extract_positions(const std::vector<std::string> &data)
+{
+    std::vector<Position> positions;
+    for (auto &&str : data) {
+        std::vector<Position> converted;
+        try {
+            converted = Line(str).convert_to_positions();
         }
-    }
-
-    std::vector<Position>
-    extract_positions(const std::vector<std::string> &data)
-    {
-        std::vector<Position> positions;
-        for (std::string str : data)
-        {
-            Line current(str);
-            std::vector<Position> converted = current.convert_to_positions();
-
-            // this is here specfically since part 1 only considers vertical and
-            // horizontal lines, therefore it could lead to runtime errors
-            if (converted.empty())
-            {
-                continue;
-            }
-            else
-            {
-                for (Position &p : converted)
-                {
-                    positions.push_back(p);
-                }
-            }
+        catch (const std::logic_error &diagonal) {
+            converted = {};
         }
-        return positions;
+        positions.insert(positions.end(), converted.begin(), converted.end());
     }
+    return positions;
+}
 
-    int count(const int &n)
-    {
-        return std::count_if(m_intersecting.begin(), m_intersecting.end(),
-                             [&](auto elem) { return elem.second >= n; });
-    }
-};
+int Vent::count_intersections(const int &n)
+{
+    invariant();
+    return std::count_if(m_graph.begin(), m_graph.end(),
+                         [&](auto elem) { return elem.second >= n; });
+}
 
 int main()
 {
     std::vector<std::string> lines = get_lines("sample.txt");
     Vent vent(lines);
-    std::cout << vent.count(2) << '\n';
+    std::cout << vent.count_intersections(2) << '\n';
     return 0;
 }
