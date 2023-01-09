@@ -1,5 +1,11 @@
+/**
+ * This is my archived solution for Problem 6. This solution works however it
+ * isn't effcient for large numbers of days (specifically anything past 100
+ * days).
+ *
+ */
+#include "archive.h"
 #include "helpers.h"
-#include "lanternfish.h"
 
 std::list<Lanternfish_Simulation::Lanternfish>
     Lanternfish_Simulation::m_population;

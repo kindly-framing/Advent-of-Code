@@ -1,28 +1,22 @@
 #ifndef LANTERN_FISH_H
 #define LANTERN_FISH_H
 
-#include <algorithm>
-#include <list>
+#include <numeric>
 #include <sstream>
 #include <string>
+#include <unordered_map>
+#include <vector>
+
+using Fish_Map = std::unordered_map<int, long long>;
 
 class Lanternfish_Simulation {
   public:
-    Lanternfish_Simulation(const std::string &initial_population);
+    Lanternfish_Simulation(const std::vector<std::string> &data);
 
-    long long run_simulation(int days);
-
-    void display_population();
+    long long run_simulation(const size_t &days);
 
   private:
-    struct Lanternfish {
-        int timer;
-
-        Lanternfish(int timer = 8) : timer{timer} {}
-        void next_day();
-    };
-
-    static std::list<Lanternfish> m_population;
+    Fish_Map m_population;
 };
 
 #endif
