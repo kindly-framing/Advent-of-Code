@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -11,15 +12,13 @@
 std::vector<std::string> get_lines(const char *file)
 {
     std::ifstream in(file);
-    if (!in.is_open())
-    {
+    if (!in.is_open()) {
         return {};
     }
 
     std::vector<std::string> lines;
     std::string line;
-    while (std::getline(in, line))
-    {
+    while (std::getline(in, line)) {
         lines.push_back(line);
     }
     return lines;
@@ -29,8 +28,7 @@ std::vector<std::string> get_lines(const char *file)
 // operator overload.
 template <typename T> void display(const std::vector<T> &vec)
 {
-    for (auto &&elem : vec)
-    {
+    for (auto &&elem : vec) {
         std::cout << elem << ' ';
     }
     std::cout << '\n';
@@ -38,10 +36,8 @@ template <typename T> void display(const std::vector<T> &vec)
 
 template <typename T> void display(const std::vector<std::vector<T>> &vec)
 {
-    for (auto &&row : vec)
-    {
-        for (auto &&elem : row)
-        {
+    for (auto &&row : vec) {
+        for (auto &&elem : row) {
             std::cout << elem << ' ';
         }
         std::cout << '\n';
@@ -49,8 +45,7 @@ template <typename T> void display(const std::vector<std::vector<T>> &vec)
 }
 
 // Usuable simple hash for pairs.
-struct Pair_Hash
-{
+struct Pair_Hash {
     template <class T1, class T2>
     std::size_t operator()(const std::pair<T1, T2> &p) const
     {
@@ -59,5 +54,18 @@ struct Pair_Hash
         return h1 ^ h2;
     }
 };
+
+// general function to parse numbers from string into a vector seperated by
+// delimeter.
+std::vector<int> parse_numbers(const std::string &s, const char &delim)
+{
+    std::vector<int> numbers;
+    std::istringstream ss(s);
+    std::string substr;
+    while (std::getline(ss, substr, delim)) {
+        numbers.push_back(std::stoi(substr));
+    }
+    return numbers;
+}
 
 #endif
