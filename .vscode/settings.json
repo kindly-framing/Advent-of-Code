@@ -56,5 +56,6 @@
   },
   "code-runner.executorMap": {
     "cpp": "cd $dir && g++ -o $fileNameWithoutExt -I \"C:\\Users\\steve\\Desktop\\Advent of Code\\includes\" $fileName && $dir$fileNameWithoutExt"
-  }
+  },
+  "python.analysis.typeCheckingMode": "basic"
 }
