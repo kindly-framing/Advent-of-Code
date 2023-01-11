@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -34,6 +35,8 @@ template <typename T> void display(const std::vector<T> &vec)
     std::cout << '\n';
 }
 
+// displays a 2d vector using cout. Make sure that for own objects to have an <<
+// operator overload.
 template <typename T> void display(const std::vector<std::vector<T>> &vec)
 {
     for (auto &&row : vec) {
@@ -66,6 +69,41 @@ std::vector<int> parse_numbers(const std::string &s, const char &delim)
         numbers.push_back(std::stoi(substr));
     }
     return numbers;
+}
+
+// returns the number of characters that are different between the two strings.
+int diff(std::string a, std::string b)
+{
+    for (size_t i = 0; i < b.size();) {
+        int index_a = a.find(b[i]);
+        if (index_a != std::string::npos) {
+            a.erase(index_a, 1);
+            b.erase(i, 1);
+        }
+        else {
+            i++;
+        }
+    }
+    return std::max(a.size(), b.size());
+}
+
+// returns true if the two strings are equal in terms of content regardless of
+// order.
+bool same_chars(std::string a, std::string b)
+{
+    if (a.size() != b.size()) {
+        return false;
+    }
+
+    std::map<char, int> occur1;
+    for (char c : a) {
+        occur1[c]++;
+    }
+    std::map<char, int> occur2;
+    for (char c : b) {
+        occur2[c]++;
+    }
+    return occur1 == occur2;
 }
 
 #endif
