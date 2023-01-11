@@ -1,77 +1,56 @@
 #include "helpers.h"
-#include <algorithm>
-#include <map>
+#include "signal.h"
 
-using namespace std;
-
-using Signals = vector<string>;
-
-struct Signal_Parser {
-    static Signals parse_signal_patterns(string signal)
-    {
-        Signals patterns;
-        istringstream ss(signal.substr(0, signal.find(" | ")));
-        while (getline(ss, signal, ' ')) {
-            patterns.push_back(signal);
-        }
-        return patterns;
-    }
-
-    static Signals parse_output_values(string signal)
-    {
-        Signals output;
-        istringstream ss(signal.substr(signal.find(" | ") + 3));
-        while (getline(ss, signal, ' ')) {
-            output.push_back(signal);
-        }
-        return output;
-    }
-};
-
-int convert_to_unique_digit(const string &str)
+Signals Parser::parse_signal_patterns(std::string signal)
 {
-    if (str.size() == 2) {
+    Signals patterns;
+    std::istringstream ss(signal.substr(0, signal.find(" | ")));
+    while (std::getline(ss, signal, ' ')) {
+        patterns.push_back(signal);
+    }
+    return patterns;
+}
+
+Signals Parser::parse_output_values(std::string signal)
+{
+    Signals output;
+    std::istringstream ss(signal.substr(signal.find(" | ") + 3));
+    while (std::getline(ss, signal, ' ')) {
+        output.push_back(signal);
+    }
+    return output;
+}
+
+int Decoder::convert_to_unique_digit(const std::string &signal)
+{
+    if (signal.size() == 2) {
         return 1;
     }
-    if (str.size() == 4) {
+    if (signal.size() == 4) {
         return 4;
     }
-    if (str.size() == 3) {
+    if (signal.size() == 3) {
         return 7;
     }
-    if (str.size() == 7) {
+    if (signal.size() == 7) {
         return 8;
     }
     return 0;
 }
 
-int diff(string a, string b)
+std::map<std::string, int>
+Decoder::convert_config_to_map(std::vector<std::string> config)
 {
-    for (size_t i = 0; i < b.size();) {
-        int index_a = a.find(b[i]);
-        if (index_a != string::npos) {
-            a.erase(index_a, 1);
-            b.erase(i, 1);
-        }
-        else {
-            i++;
-        }
-    }
-    return max(a.size(), b.size());
-}
-
-map<string, int> convert_config_to_map(vector<string> config)
-{
-    map<string, int> map;
+    std::map<std::string, int> map;
     for (size_t i = 0; i < config.size(); i++) {
         map[config[i]] = i;
     }
     return map;
 }
 
-map<string, int> decode(Signals patterns)
+std::map<std::string, int> Decoder::decode(Signals patterns)
 {
-    vector<string> config(10, "");
+    std::vector<std::string> config(10, "");
 
     // find the unique digits
     for (auto it = patterns.begin(); it != patterns.end();) {
@@ -150,29 +129,16 @@ map<string, int> decode(Signals patterns)
     return convert_config_to_map(config);
 }
 
-bool same_chars(string a, string b)
+/**
+ * @brief By using the output signal and encoder for the output signal, converts
+ * to number on segment display.
+ *
+ */
+int output_value(Signals output, std::map<std::string, int> encoder)
 {
-    if (a.size() != b.size()) {
-        return false;
-    }
-
-    map<char, int> occur1;
-    for (char c : a) {
-        occur1[c]++;
-    }
-    map<char, int> occur2;
-    for (char c : b) {
-        occur2[c]++;
-    }
-
-    return occur1 == occur2;
-}
-
-int output_value(Signals output, map<string, int> encoder)
-{
-    string out;
+    std::string out;
     for (auto value : output) {
-        string unscrambled;
+        std::string unscrambled;
         for (auto &digit : encoder) {
             if (same_chars(value, digit.first)) {
                 unscrambled = digit.first;
@@ -187,13 +153,13 @@ int output_value(Signals output, map<string, int> encoder)
 
 int main()
 {
-    vector<string> lines = get_lines("sample.txt");
+    std::vector<std::string> lines = get_lines("sample.txt");
 
     int sum{};
     for (auto &&line : lines) {
-        Signals patterns = Signal_Parser::parse_signal_patterns(line);
-        Signals output = Signal_Parser::parse_output_values(line);
-        map<string, int> encoder = decode(patterns);
+        Signals patterns = Parser::parse_signal_patterns(line);
+        Signals output = Parser::parse_output_values(line);
+        std::map<std::string, int> encoder = Decoder::decode(patterns);
         sum += output_value(output, encoder);
     }
     std::cout << sum << '\n';
