@@ -36,7 +36,7 @@ std::string find_incomplete_sequence(const std::string &line)
 
 int main()
 {
-    std::vector<std::string> lines = get_lines("actual.txt");
+    std::vector<std::string> lines = get_lines("sample.txt");
 
     // finding the scores for incomplete lines using scoring table.
     std::map<char, int> table = {{')', 1}, {']', 2}, {'}', 3}, {'>', 4}};
