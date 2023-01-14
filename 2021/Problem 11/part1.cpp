@@ -66,8 +66,6 @@ struct Energy_Grid {
             for (size_t c = 0; c < octopuses[r].size(); c++) {
                 Position current(r, c);
                 if (octopus_at(current)->flashed) {
-                    ++count;
-                    octopus_at(current)->reset();
                     increase_adjacent(current);
                 }
             }
@@ -87,32 +85,14 @@ struct Energy_Grid {
 
     void increase_adjacent(const Position &start)
     {
-        std::set<Position> visited;
-        std::queue<Position> queue;
-        add_neighbors(start, queue);
-
-        while (!queue.empty()) {
-            Position temp = queue.front();
-            queue.pop();
-
-            if (!visited.count(temp)) {
-                visited.insert(temp);
-
-                Octopus *current = octopus_at(temp);
-
-                // already been flashed
-                if (octopus_at(temp)->energy_level == 0) {
-                    continue;
-                }
-
-                // adding energy to adjacent
-                current->increase_energy();
-
-                // if flashed from adding adjacent, reset and add neighbors
-                if (current->flashed && current->energy_level == 10) {
-                    add_neighbors(temp, queue);
-                    ++count;
-                    current->reset();
+        Octopus *current = octopus_at(start);
+        if (current->flashed && !flashed.count(start)) {
+            flashed.insert(start);
+            current->reset();
+            for (auto &&position : neighbors(start)) {
+                if (!flashed.count(position)) {
+                    octopus_at(position)->increase_energy();
+                    increase_adjacent(position);
                 }
             }
         }
@@ -158,16 +138,14 @@ struct Energy_Grid {
 
 int main()
 {
-    std::vector<std::string> lines = get_lines("sample.txt");
+    std::vector<std::string> lines = get_lines("actual.txt");
 
     Energy_Grid grid(lines);
-    for (int i = 1; i <= 2; i++) {
+    for (int i = 1; i <= 100; i++) {
         grid.next_step();
-        std::cout << "After step " << i << ":\n";
-        display(grid.octopuses);
-        std::cout << '\n';
     }
-    std::cout << grid.count << " == " << 35 << '\n';
+    display(grid.octopuses);
+    std::cout << grid.count << '\n';
 
     return 0;
 }
