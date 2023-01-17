@@ -59,5 +59,6 @@
     "cpp": "cd $dir && g++ -o $fileNameWithoutExt -I \"C:\\Users\\steve\\Desktop\\Advent of Code\\includes\" $fileName && $dir$fileNameWithoutExt"
   },
   "python.analysis.typeCheckingMode": "basic",
-  "python.formatting.provider": "black"
+  "python.formatting.provider": "black",
+  "C_Cpp.errorSquiggles": "enabled"
 }
